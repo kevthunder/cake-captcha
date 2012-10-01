@@ -4,6 +4,10 @@ class CaptchaHelper extends AppHelper {
 	
 	function captcha($fieldName = 'captcha', $options = array() ){
 		App::import('Vendor', 'Captcha.recaptchalib');
+		if(is_array($fieldName)){
+			$options = $fieldName;
+			$fieldName = 'captcha';
+		}
 		if(!empty($options) && ! is_array($options) && strlen($options) >= 40){
 			$options = array('key'=>$options);
 		}
@@ -18,10 +22,18 @@ class CaptchaHelper extends AppHelper {
 			'key'=>CaptchaConfig::load('publicKey'),
 		);
 		$opt = array_merge($defOpt,$options);
-		$html = '
+		$moreJsOpt = '';
+		$html = '';
+		if($opt['theme'] == 'custom'){
+			$moreJsOpt .= 'custom_theme_widget: "recaptcha_widget",';
+			$view =& ClassRegistry::getObject('view');
+			$html .= $view->element('custom_theme',array('plugin'=>'captcha'));
+		}
+		$html .= '
 			<script type="text/javascript">
 				 var RecaptchaOptions = {
 					theme : "'.$opt['theme'].'",
+					'.$moreJsOpt.'
 					lang : "'.$opt['lang'].'"
 				 };
 			</script>';
